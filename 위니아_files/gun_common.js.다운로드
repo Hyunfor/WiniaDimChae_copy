@@ -1,0 +1,1110 @@
+'use strict';
+
+var RESULT_CODE = {
+	SUCCESS : 100,						//에러 없이 리턴 성공
+	SUCCESS_EMPTY : 200,			//에러 없이 모든 로직을 수행 하였으나, 결과값 없음
+	
+	ERROR : -100,							//로직 에러로 인한 Exception Catch
+	ERROR_EMPTY : -200,				//로직을 수행하는데 필요한 결과값이 없어 더 이상 로직을 수행 할 수 없음
+	ERROR_DUPLICATION : -300,		//중복으로 인한 오류
+	ERROR_LOGIN : -400,				//로그인을 하지 않아 더이상 로직을 수행 할 수 없음
+	ERROR_AUTH : -500					//권한 오류
+};
+
+var flag = true;
+
+/**
+ * 더블클릭 방지
+ */
+var doubleSubmitFlag = false;
+
+function doubleSubmitCheck(){
+	if(doubleSubmitFlag){
+		return doubleSubmitFlag;
+	} else {
+		doubleSubmitFlag = true;
+		return false;
+	}
+}
+
+/**
+ * jQuery Function
+ */
+(function($){
+	
+	/* Ajax 기본 셋팅 */
+	$.ajaxSetup({
+		async : true,
+		dataType : 'json',
+		contentType: 'application/x-www-form-urlencoded; charset=UTF-8', //'application/json; charset=UTF-8',
+
+	    error : function(xhr, textStatus, errorThrown) {
+			console.log('Error ::: ' + this.url + ', errorThrown : ' + errorThrown + ', statusCode : ' + xhr.status);
+			console.log(xhr);
+			if(errorThrown=='abort'){
+				doubleSubmitFlag = false;
+			}else{
+				if(xhr.status == '400') {
+					//check required parameter or contentType
+					alert('작업을 수행하는데 필요한 필수 값을 찾을 수 없습니다.',null, function(){
+						doubleSubmitFlag = false;
+						fnLoading(1);
+					});
+				}else if(xhr.status == '401') {
+					//login session check
+					alert('사용자 세션이 만료 되었습니다. 로그인 후 다시 시도해주세요.','알림', function(){
+						location.href = "/logout";
+					});
+				}else if(xhr.status == '403') {
+					//forbidden exception
+					alert('해당 작업에 접근 또는 수행 할 수 있는 권한이 없습니다.',null, function(){
+						doubleSubmitFlag = false;
+						fnLoading(1);
+					});
+				}else if(xhr.status == '404') {
+					//url check
+					alert('요청하신 페이지를 찾을 수 없습니다.',null, function(){
+						doubleSubmitFlag = false;
+						fnLoading(1);
+					});
+				}else{
+					//exception
+					alert('해당 작업을 수행하던 중 오류가 발생하였습니다. 관리자에게 문의 하세요.',null, function(){
+						doubleSubmitFlag = false;
+						fnLoading(1);
+					});
+				}
+			}
+		}
+	});
+	
+	/* Form data parser  */
+	$.fn.serializeObject = function() {
+		var obj = null;
+		try {
+			if(this[0].tagName && this[0].tagName.toUpperCase() == "FORM") {
+				var arr = this.serializeArray();
+				if (arr) {
+					obj = {};
+					jQuery.each(arr, function() {
+						if(!fnIsEmpty($.trim(this.value))){
+							if(obj[this.name] == null){
+								obj[this.name] = $.trim(this.value);							
+							}else{
+								obj[this.name] = obj[this.name]+','+$.trim(this.value);
+							}
+						}
+					});
+				}				
+				
+			}
+		} catch (e) {
+			console.debug(e.message);
+		} finally {
+		}
+		return obj;
+	};
+	
+	$.getScripts = function(scripts, callback){
+		var script_arr = [];
+		try{
+			if(fnTypeof(scripts) == 'string' && scripts.indexOf(',') < 0){
+				script_arr.push(scripts);
+			}else if(fnTypeof(scripts) == 'string' && scripts.indexOf(',') > 0){
+				for(var i=0; i<scripts.split(',').length; i++){
+					script_arr.push($.trim(scripts.split(',')[i]));
+				}
+			}else if(fnTypeof(scripts) == 'array'){
+				for(var i=0; i<scripts.length; i++){
+					script_arr.push($.trim(scripts[i]));
+				}
+			}
+		}catch(e){
+			console.error(e);
+		}
+		
+		if(script_arr.length > 0){
+			var ajaxes = [];
+			for(var i=0; i<script_arr.length; i++){
+				var ajax = $.ajax({
+					cache : true,
+					async : false,
+					dataType : 'script',
+					url : script_arr[i]+(script_arr[i].indexOf('?')>-1?'&':'?')+'v='+resource_version
+				});
+			}
+			
+			$.when.apply($, ajaxes).always(callback);
+		}
+	};
+	
+})($);
+
+/**
+ * 		로딩 이벤트
+ */
+function fnLoading(seq){
+	if(seq==0){
+		$('.loding').toggleClass("active");
+		$('.loding').append('<div class="cp-spinner cp-round"></div>	<p>WAITING</p><div class="dimmed" style="display: block"></div>')
+	}else{
+		$('.loding').toggleClass("active");
+		$('.loding').empty();
+	}
+}
+
+
+/**
+ * 		객체가 null 이거나 empty 인지 확인한다.
+ */
+function fnIsEmpty(obj){
+	if(obj == null || obj == undefined || obj == "undefined") return true;
+	if(fnTypeof(obj) == "string"){
+		if(obj.trim() == "" || obj.toLowerCase() == "undefined" || obj.toLowerCase() == "null"){
+			return true;
+		}
+	}else {
+		if(fnTypeof(obj) == "object"){
+			var emptyValue = true;
+			for(var property in obj) if(!fnIsEmpty(obj[property])){emptyValue = false; break;}
+			if(emptyValue) return true;
+		}else if(fnTypeof(obj) == "array"){
+			if(obj.length == 0) return true;
+			else{
+				var emptyValue = true;
+				for(var i=0; i<obj.length; i++) if(!fnIsEmpty(obj[i])){emptyValue = false; break;}
+				if(emptyValue) return true;
+			}
+		}
+	}
+	return false;
+};
+
+/**
+ * 		객체의 타입을 찾아온다.
+ */
+function fnTypeof(object) {
+	if (object === null) return "null";
+	else if (object === undefined) return "undefined";
+	else if (typeof object === "number") return "number";
+	else if (typeof object === "function") return "function";
+	else if (typeof object === "string") return "string";
+	else if (typeof object === "boolean") return "boolean";
+	else if (object.constructor === "".constructor) return "string";
+	else if (object.constructor === [].constructor) return "array";
+	else if (object.constructor === {}.constructor) return "object";
+	else if (object.constructor === new Date().constructor) return "date";
+	else return "unknow";
+}
+
+/**
+ * 		쿠키 생성
+ * 		cookieName 으로 days(몇일) 동안 cookieValue(값) 을 담아 보관한다.
+ */
+function fnSetCookie(cookieName, days, cookieValue){
+	var expireDate = new Date();
+	expireDate.setDate(expireDate.getDate()+Number(days));
+	document.cookie = cookieName+"="+escape(cookieValue?cookieValue:cookieName)+"; path=/; expires="+expireDate.toGMTString()+";";	
+}
+
+/**
+ * 		쿠키 삭제
+ * 		cookieName 으로 생성된 쿠키를 삭제 한다.
+ * 		cookieName 이 안넘어 왔을경우(=is Null) 모든 쿠키를 삭제한다.
+ */
+function fnDelCookie(cookieName){
+	var expireDate = new Date();
+	expireDate.setDate(expireDate.getDate()-1);
+	if(cookieName){
+		if(fnGetCookie(cookieName)){
+			document.cookie = cookieName+"=; path=/; expires="+expireDate.toGMTString()+";";
+		}
+	}else{
+		if(document.cookie != ""){
+			var cookies = document.cookie.split(";");
+			for (var i=0; i<cookies.length; i++){
+				var name = cookies[i].split("=")[0];
+				document.cookie = name+"=; path=/; expires="+expireDate.toGMTString()+";";
+			}
+		}
+	}
+}
+
+/**
+ * 		쿠키 value 리턴
+ * 		cookieName 으로 생성된 쿠키들중 cookieValue 값을 가지고 있는 쿠키의 값을 반환 한다.
+ * 		cookieValue 가 안넘어 왔을경우(=is Null) cookieName으로 된 첫번째 쿠키의 값을 반환 한다.
+ */
+function fnGetCookie(cookieName, cookieValue){
+	var nameOfCookie = cookieName + "=";
+  	var x = 0;   	
+  	while (x <= document.cookie.length) { 
+  		var y = (x+nameOfCookie.length); 
+  		if(document.cookie.substring(x, y) == nameOfCookie){ 
+  			var endOfCookie = 0;
+			if((endOfCookie=document.cookie.indexOf( ";", y )) == -1) endOfCookie = document.cookie.length;
+			var v = unescape(document.cookie.substring(y, endOfCookie));
+			if(cookieValue){ if(v == cookieValue) return v; }
+			else { return v; }
+		} 
+		x = document.cookie.indexOf(" ", x) + 1; 
+		if ( x == 0 ) break;
+	}
+   	return null;
+}
+
+/**
+ * 		분 정보를 시간:분 으로 변경하여 반환한다. 
+ */
+function fnMinsToHHmm(minutes) {
+	var h = Math.floor(minutes / 60);
+	var m = minutes % 60;
+	h = (h<10) ? '0'+ h : h;
+	m = (m<10) ? '0'+ m : m;
+	return h+':'+m;
+}
+
+/**
+ * 		Array 중복 항목 제거 후 리턴
+ */
+Array.prototype.unique = function(){
+	if(this == null) return null;
+	if(!(this.constructor === [].constructor)) return this;
+	
+	var arr = [];
+	for(var i=0; i<this.length; i++){
+		if(arr.indexOf(this[i]) === -1) arr.push(this[i]);
+	}
+	
+	return arr;
+};
+
+/**
+ * 좌측 문자열 채우기
+ *
+ */
+String.prototype.lpad = function(padLen, padStr) {
+	var str = this;
+	if (padStr.length > padLen) {
+		console.log("오류 : 채우고자 하는 문자열이 요청 길이보다 큽니다");
+		return str + "";
+	}
+	while (str.length < padLen)
+		str = padStr + str;
+	str = str.length >= padLen ? str.substring(0, padLen) : str;
+	return str;
+};
+
+/**
+ * 우측 문자열 채우기
+ */
+
+String.prototype.rpad = function(padLen, padStr) {
+	var str = this;
+	if (padStr.length > padLen) {
+		console.log("오류 : 채우고자 하는 문자열이 요청 길이보다 큽니다");
+		return str + "";
+	}
+	while (str.length < padLen)
+		str += padStr;
+	str = str.length >= padLen ? str.substring(0, padLen) : str;
+	return str;
+};
+
+
+var fnEachDatePicker = function(){
+	//검색 영역의 달력 UX 정의
+	$('.d_box').each(function(){
+		var $picker_box = $(this);
+		$picker_box.ax5picker({
+			zIndex: 5001,
+			direction: "top",
+			content: {
+				type : 'date',
+				config : {
+					dateFormat : 'yyyy.MM.dd',
+					control : {
+						left : '<i class="fa fa-chevron-left"></i>',
+						yearTmpl : '%s년',
+						monthTmpl : '%s',
+						right : '<i class="fa fa-chevron-right"></i>'
+					},
+					lang : {
+						yearHeading: "년도를 선택 하세요.",
+						monthHeading: "월을 선택 하세요.",
+						yearTmpl : "%s년",
+						months : ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'],
+						dayTmpl : "%s"
+					}
+				}
+			},
+			onStateChanged : function(){
+				$picker_box.data('ax5pickerState', this.state);
+				if(this.state == 'close'){
+					var selectedValue = $picker_box.find('input:hidden').val();
+					if(selectedValue != null && selectedValue != '' && $picker_box.find('span:first').html() != selectedValue){
+						$picker_box.find('span:first').html(selectedValue);
+					}
+				}else{
+					if($picker_box.attr('clear') != 'false'){// clear="false" attribute가 있으면 clear 버튼 생성하지 않음
+						var pickerBody = $(this.self.activePicker).find('.ax-picker-body');
+						var clearBtn = $('<div class="clear_date"><div class="b_area_sm"><a href="javascript:;" class="btn_gy" onclick="fnClearDate(this)">Clear Date</a></div></div>');
+						clearBtn.data('target', this.item.$target);
+						pickerBody.append(clearBtn);
+					}
+				}
+			}
+		});
+		$picker_box.data('ax5pickerState', 'close');
+	});
+
+	$('.d_box').unbind('click').bind('click', function(){
+		if($(this).data('ax5pickerState') == 'open'){
+			$(this).ax5picker('close');
+		}else{
+			$(this).ax5picker('open');
+		}
+	});
+};
+
+var fnEachMonthPicker = function(){
+	//검색 영역의 달력 UX 정의
+	$('.m_box').each(function(){
+		var $picker_box = $(this);
+		$picker_box.ax5picker({
+			zIndex: 5001,
+			direction: "top",
+			content: {
+				type : 'date',
+				config : {
+					mode:"year", selectMode:"month",
+					lang : {
+						yearHeading: "년도를 선택 하세요.",
+						monthHeading: "월을 선택 하세요.",
+						yearTmpl : "%s년",
+						months : ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'],
+					}
+				}
+			},
+			onStateChanged : function(){
+				$picker_box.data('ax5pickerState', this.state);
+				if(this.state == 'close'){
+					var selectedValue = $picker_box.find('input:hidden').val();
+					if(selectedValue != null && selectedValue != '' && $picker_box.find('span:first').html() != selectedValue){
+						$picker_box.find('span:first').html(selectedValue);
+					}
+				}else{
+					if($picker_box.attr('clear') != 'false'){// clear="false" attribute가 있으면 clear 버튼 생성하지 않음
+						var pickerBody = $(this.self.activePicker).find('.ax-picker-body');
+						var clearBtn = $('<div class="clear_date"><div class="b_area_sm"><a href="javascript:;" class="btn_gy" onclick="fnClearDate(this)">Clear Date</a></div></div>');
+						clearBtn.data('target', this.item.$target);
+						pickerBody.append(clearBtn);
+					}
+				}
+			}
+		});
+		$picker_box.data('ax5pickerState', 'close');
+	});
+
+	$('.m_box').unbind('click').bind('click', function(){
+		if($(this).data('ax5pickerState') == 'open'){
+			$(this).ax5picker('close');
+		}else{
+			$(this).ax5picker('open');
+		}
+	});
+};
+
+var fnClearDate = function(o){
+	var $picker_box = $(o).parents('.clear_date').data('target');
+	$picker_box.find('input:hidden').val('');
+	$picker_box.find('span:first').html('');
+	$picker_box.ax5picker('close');
+};
+
+$(document).ready(function(){
+	fnEachDatePicker();
+	fnEachMonthPicker();
+
+	/*clear 버튼 이벤트 */
+	
+	$('input[type="search"]').on('input', function(e) {
+
+		  var nm = e.target.id.replace("NM","NO")
+		  if('' == this.value) {
+			$('#'+nm).val('');		
+		  }
+	});
+	//@dwkim 임시주석
+	//Kakao.init('78ea69d4629dfab7e7bceeccb4383766');
+});
+
+function fnOpenPopup(divId, url, param, opts){
+	var option = JSON.parse(JSON.stringify(opts));
+	$.ajax({
+		type: 'GET',
+		url : url,
+		data : param,
+		dataType : 'html',
+		success : function(html){
+			$(html).appendTo($('#pop01'));
+
+			$('#'+divId).bPopup({
+				popId:option.popId,
+				modalClose: false,
+				escClose: false,
+				closeClass:'modal_close_btn',
+				zIndex:option.zIndex,
+				onClose:function () {
+					$('#'+divId).remove();
+					$('#pop01').empty();
+				}
+			});
+		}
+	});
+};
+
+function comma(obj) {
+	if(!fnIsEmpty(obj)){
+
+	 obj = 	String(obj);
+	 var regx = new RegExp(/(-?\d+)(\d{3})/);
+     var bExists =obj.indexOf('.');//0번째부터 .을 찾는다.
+     var strArr = obj.split('.');
+     while (regx.test(strArr[0])) {//문자열에 정규식 특수문자가 포함되어 있는지 체크
+         //정수 부분에만 콤마 달기 
+         strArr[0] = strArr[0].replace(regx, "$1,$2");//콤마추가하기
+     }
+     if (bExists > -1) {
+         //. 소수점 문자열이 발견되지 않을 경우 -1 반환
+         obj = strArr[0] + "." + strArr[1];
+     } else { //정수만 있을경우 //소수점 문자열 존재하면 양수 반환 
+         obj = strArr[0];
+     }
+     return obj;//문자열 반환
+     
+    
+/*		str = String(str);
+		return str.replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,');*/
+	} else {
+    	return 0;
+	}
+};
+
+
+
+/**
+ * 날짜객체 입력 받아서 해당날짜만큼 더해서 날짜객체 반환하기
+ *
+ */
+function getDateObjAddDate(dateObj, addDate){
+	var result = new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate() + addDate);
+	return result;
+}
+
+function getDateThursdayThisWeek(ymd){
+	var yyyy = getModeValueByYmd( ymd, "year" );
+	var mm = getModeValueByYmd( ymd, "month" ) - 1;
+	var dd = getModeValueByYmd( ymd, "date" );
+
+	var d = new Date(yyyy, mm, dd);
+
+	var dayOfWeek = d.getDay();		// 일요일~토요일(0~6)
+	var addDate = 0;
+
+	// 일요일은 3일을 빼서 목요일을 구한다.
+	if( dayOfWeek == 0 ) addDate = -3;
+	else addDate = 4 - dayOfWeek;
+
+	// 구한날짜만큼 더한다.
+	var thursdayD = getDateObjAddDate( d, addDate );
+
+	return getYmdByDateObj( thursdayD );
+}
+
+function getYmdByDateObj(dateObj){
+	var yyyy = dateObj.getFullYear();
+	var mm = dateObj.getMonth() + 1;
+	var dd = dateObj.getDate();
+
+	if( mm < 10 ) mm = "0"+ mm;
+	if( dd < 10 ) dd = "0"+ dd;
+
+	var result = yyyy +""+ mm +""+ dd;
+
+	return result;
+}
+
+/**
+ * yyyyMMdd 입력받아서 날짜객체 반환하기
+ *
+ */
+function getDateObjByYmd(ymd) {
+
+	var yyyy = getModeValueByYmd( ymd, "year" );
+	var mm = getModeValueByYmd( ymd, "month" ) - 1;
+	var dd = getModeValueByYmd( ymd, "date" );
+
+	var resultD = new Date( yyyy, mm, dd);
+	return resultD;
+}
+
+function getModeValueByYmd(ymd, mode){
+	var result = ymd;
+
+	if( ymd && ymd.length == 8 ) {
+		if( mode == "year" ) result = ymd.substring(0, 4);
+		if( mode == "month" ) result = ymd.substring(4, 6);
+		if( mode == "date" ) result = ymd.substring(6, 8);
+
+		if( result ) result = parseInt( result );
+	}
+
+	return result;
+}
+
+$(document).ready(function(){
+//	fnEachDatePicker();
+	//조회 조건 검색시 자동 검색
+/*	$( "input[type=search]" ).keypress(function(e) {
+		if(e.keyCode==13) fnSearch(0);
+    });
+	
+	$( ".select.search" ).change(function() {
+		fnSearch(0);
+	});
+	
+	
+    $('#searchStartDateValue1').on('propertychange change', function(){
+    	fnSearch(0);
+    });
+    
+    $('#searchEndDateValue1').on('propertychange change', function(){
+    	fnSearch(0);
+    });*/
+
+	/**
+	 * 숫자만 입력
+	 */
+
+	$("input[numberOnly]").on("keypress", function(event){
+		var $val1 = $(this);
+		setTimeout(function(){
+			var $val =  $val1.val();
+			$val = $val.replace(/[^0-9]/g,"");
+
+			$val1.val($val);
+		},100);
+	});
+
+	$("input[numberOnly]").on("keyup", function(event){
+		var $val1 = $(this);
+		setTimeout(function(){
+			var $val =  $val1.val();
+			$val = $val.replace(/[^0-9]/g,"");
+
+			$val1.val($val);
+		},100);
+	});
+
+	$("input[numberOnly]").on("focusout", function(event){
+		var $val1 = $(this);
+		setTimeout(function(){
+			var $val =  $val1.val();
+			$val = $val.replace(/[^0-9]/g,"");
+
+
+			$val1.val($val);
+			$val1.trigger('change');
+		},100);
+	});
+
+	$('#checkboxAll').click(function(){
+		if($('#checkboxAll').is(":checked")){
+			$('#listTbody').find('input[type=checkbox]').prop('checked', true);
+			$('#listTbody').find('input[type=checkbox]').val('Y');
+		} else {
+			$('#listTbody').find('input[type=checkbox]').prop('checked', false);
+			$('#listTbody').find('input[type=checkbox]').val('N');
+		}
+	})
+
+});
+
+var fnMediaKeyInfo = function(url){
+/*    $.get(url, function(data) {
+        var fileDom = $(data);
+        console.log(fileDom)
+        
+    }, "text");*/
+    
+}
+
+
+
+var fnEachDatePicker = function(){
+	//검색 영역의 달력 UX 정의
+	$('.input-date').each(function(){
+		var $picker_box = $(this);
+	
+		$picker_box.ax5picker({
+			zIndex: 5001,
+	        direction: "top",
+	        content: {
+	        	type : 'date',
+	            config : {
+	            	dateFormat : 'yyyy-MM-dd',
+	            	control : {
+                        left : '<i class="fa fa-chevron-left"></i>',
+                        yearTmpl : '%s년',
+                        monthTmpl : '%s',
+                        right : '<i class="fa fa-chevron-right"></i>'
+                    },
+                    lang : {
+                    	yearHeading: "년도를 선택 하세요.",
+                        monthHeading: "월을 선택 하세요.",
+                        yearTmpl : "%s년",
+                        months : ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'],
+                        dayTmpl : "%s"
+                    },
+                    marker: (function () {
+                        var marker = {};
+                        marker[ax5.util.date(new Date(), {'return': 'yyyy-MM-dd', 'add': {d: 0}})] = true;
+
+                        return marker;
+                    })()                    
+	            },
+	            formatter: {
+	                pattern: 'date'
+	            }
+	        },
+	        onStateChanged : function(){
+	            if (this.state == "open") {
+	                var selectedValue = this.self.getContentValue(this.item["$target"]);
+	                if (!selectedValue) {
+	                    this.item.pickerCalendar[0].ax5uiInstance.setSelection([ax5.util.date(new Date(), {'add': {d: 1}})]);
+	                }
+	            }
+	        }
+	    });
+
+	});
+	$('.input-date').unbind('click').bind('click', function(){
+		if($(this).data('ax5pickerState') == 'open'){
+			$(this).ax5picker('close');
+		}else{
+			$(this).ax5picker('open');
+		}
+	});
+};
+
+var fnClearDate = function(o){
+	var $picker_box = $(o).parents('.clear_date').data('target');
+	$picker_box.find('input:hidden').val('');
+	$picker_box.find('span:first').html('');
+	$picker_box.ax5picker('close');
+};
+
+var fnAuthError = function(){
+	top.alert('권한이 없습니다.');
+};
+
+
+
+
+function fnReplace(val){
+	var reVal;
+	reVal = replaceAll(val,'_','\\_');
+	reVal = replaceAll(reVal,'%','\\%');
+	return reVal;
+}
+
+function replaceAll(str, searchStr, replaceStr) {
+	  return str.split(searchStr).join(replaceStr);
+}
+
+
+
+
+/* 파일 첨부 */
+var fileIdx = 0;
+var allowDocumentFileExt = ['zip','hwp','xlsx','xls','pptx','ppt','docx','doc','pdf'];
+var allowImageFileExt = ['jpg','bmp','png','gif', 'jpeg'];
+var allowFileExt = (function(){
+	return allowImageFileExt.concat(allowDocumentFileExt);
+})();
+
+function readURL(input, allowTypes, allowCount, prevSize) {
+	if (input.files && input.files[0]) {
+		var fileName = input.files[0].name;
+		var fileExt = fileName.substring(fileName.lastIndexOf('.')+1).toLowerCase();
+		var allowTypeExtList = allowFileExt;
+
+		if(!fnIsEmpty(allowTypes)){
+			try {
+				allowTypeExtList = eval('allow'+allowTypes+'FileExt');
+			} catch (e) {
+				allowTypeExtList = allowTypes.toLowerCase().split(',');
+			}
+		}
+
+		if(allowTypeExtList.indexOf(fileExt) < 0){
+			alert('첨부 할 수 없는 확장자 입니다.');
+			var copiedInput = $(input).get(0).outerHTML;
+			$(input).after(copiedInput);
+			$(input).remove();
+			return;
+		}
+		
+		var uploadedCount = $(input).siblings('.uploadFiles').find('.uploadFile').length;
+		
+		if(allowCount == 1) {
+		   if($('input[type=file][name=\''+input.name+'\']').length > 1){
+			   $('input[type=file][name=\''+input.name+'\']')[0].remove(); 	
+		   } 
+		   if(uploadedCount >= 1){$(input).siblings('.uploadFiles').children().remove();}
+		   //업로드 파일명 Setting
+		   if(!fnIsEmpty($(input).attr("fileTextId"))){
+				var textId = $(input).attr("fileTextId");
+				$("#"+textId).val(fileName);
+				$("label[for=\'"+textId+"\']").text("이미지 수정");
+		    }
+		} else {
+			if(uploadedCount >= allowCount){
+				alert('더이상 첨부 할 수 없습니다. 첨부 가능 파일 수 : '+allowCount);
+				var copiedInput = $(input).get(0).outerHTML;
+				$(input).after(copiedInput);
+				$(input).remove();
+				return;
+			}
+		}
+
+		fileIdx++;
+		
+		if(allowImageFileExt.indexOf(fileExt) >= 0 && allowTypes.indexOf('DRM') <= -1){
+			var reader = new FileReader();
+			reader.onload = function(e) {
+				$(input).siblings('.uploadFiles').append('<span class="uploadFile" data-file-idx="'+fileIdx+'"></span>');
+				$(input).siblings('.uploadFiles').find('.uploadFile:last').append('<img src="'+e.target.result+'" alt="" data-file-seq="" style="width:'+prevSize+'px; height:'+prevSize+'px;" title="'+fileName+'" onerror="this.src=\''+notFoundImage_src_size260+'\'">');
+
+				$(input).siblings('.uploadFiles').find('.uploadFile:last').append('<a href="javascript:void(0);" onclick="fnDeleteImage(this);" class="close"><span class="blind">닫기</span></a>');
+			}
+			reader.readAsDataURL(input.files[0]);
+			
+		} else{
+			$(input).siblings('.uploadFiles').append('<span class="uploadFile" data-file-idx="'+fileIdx+'"></span>');
+			$(input).siblings('.uploadFiles').find('.uploadFile:last').append('<img src="/resources/images/@thumb/thumb_'+fileExt+'_150x150.png" alt="" data-file-seq="" style="width:'+prevSize+'px; height:'+prevSize+'px;" title="'+fileName+'" onerror="this.src=\''+notFoundImage_src_size260+'\'">');
+			$(input).siblings('.uploadFiles').find('.uploadFile:last').append('<a href="javascript:void(0);" onclick="fnDeleteImage(this);" class="close"><span class="blind">닫기</span></a>');
+		}
+		
+		var copiedInput = $(input).get(0).outerHTML;
+		$(input).after(copiedInput);
+		$(input).addClass('fileIdx'+fileIdx).hide();
+	}
+}
+
+function fnSetUploadedFiles(fileWraps, fileList, prevSize){
+	if(fnIsEmpty(fileList)) return;
+	if(prevSize == null) prevSize = '150';
+	$(fileList).each(function(i, fileData){
+		var OWNER_TYPE = fileData.OWNER_TYPE;
+		if(allowImageFileExt.indexOf(fileData.FILE_EXT) >= 0) {
+			$(fileWraps).append('<span class="uploadFile" data-file-idx="'+(i+1)+'"style="display:none;"></span>');
+			$(fileWraps).parent().find(".fileText").val(fileData.FILE_REALNAME);
+			var fileTextId = $(fileWraps).parent().find(".fileText").attr("id");
+			$(fileWraps).parent().find('label[for=\''+fileTextId+'\']').text("이미지 수정");
+		} else{
+			$(fileWraps).append('<span class="uploadFile" data-file-idx="'+(i+1)+'"></span>');
+			$(fileWraps).find('.uploadFile:last').append('<img src="/resources/images/@thumb/thumb_'+fileData.FILE_EXT+'_150x150.png" alt="" ajaxFlag="Y" data-file-from="DB" data-file-ownerType="'+fileData.OWNER_TYPE+'" data-file-ownerKey="'+fileData.OWNER_KEY+'" data-file-seq="'+fileData.FILE_SEQ+'" style="width:'+prevSize+'px; height:'+prevSize+'px;" title="'+fileData.FILE_REALNAME+'" onerror="this.src=\''+notFoundImage_src_size260+'\'">');
+			$(fileWraps).find('.uploadFile:last').append('<a href="javascript:void(0);" class="close"><span class="blind">닫기</span></a>');
+		}
+		
+		$(fileWraps).find('.uploadFile:last').append('<input type="hidden" name="fileList['+i+'].FILE_SEQ" value="'+fileData.FILE_SEQ+'" />');
+	});
+	fileIdx = fileList.length;
+}
+
+
+$(document).on('change', '.file_input_hidden', function(){
+	var allowTypes = $(this).attr('allowTypes') || '';
+	var allowCount = $(this).attr('allowCount') || 1;
+	var prevSize = $(this).attr('prevSize') || '160';
+	var ownerType = $(this).attr('ownerType') || '';
+	readURL(this, allowTypes, allowCount, prevSize, ownerType);
+});
+
+
+function fnDeleteImage(obj){
+	var $obj = $(obj);
+	var fileIdx = $obj.parent().data('fileIdx');
+	var $p = $obj.parent();
+	var $img = $obj.parent().find('img');
+	fnConfirm('이미지를 초기화하겠습니까?', '초기화', function(result){
+		if(result){
+			$p.remove();
+			$('input:file.fileIdx'+fileIdx).remove();
+			$('#fileupload').val('');
+			
+		}
+	});
+}
+
+function fnResetRemoveBox(objId)
+{
+	$('#'+objId).find("option").remove();
+
+}
+
+function fnResetSelectBox(objId)
+{
+	$('#'+objId).append('<option value="">선택해주세요</option>');
+}
+
+function fnErrImage(src, obj) {
+	$(obj).attr('src', src);
+	$(obj).attr('title', "");
+	$(obj).parent().find('.desc').empty();
+}
+
+function fncheckpro(el){
+	console.log(el)
+	if(el.checked){
+		el.value="Y";
+	}else{
+		el.value="N";
+	}
+
+}
+
+function fnExcelTitleHaed(excelTitle){
+	var excelTitleArr = new Array();
+	var cnt = 0
+	for (var i = 0; i < excelTitle.length; i++) {
+
+		if(excelTitle[i].getElementsByTagName("div").length ==0){
+			excelTitleArr[cnt]=excelTitle[i].textContent;
+			cnt++;
+		}
+		
+	}
+
+	
+	return excelTitleArr;
+}
+
+function fnExcelAlign(col){
+	var colArr = new Array();
+	var cnt = 0
+	for (var i = 0; i < col.length; i++) {
+		if(col[i].key != 'CHK'){
+
+			switch(col[i].styleClass) {
+			case "left" : colArr[cnt] = 1;
+						  cnt++;	
+						  break;	
+			case "left ellipsis" : colArr[cnt] = 1;
+			  cnt++;	
+			  break;						  
+			case "center" : colArr[cnt] = 2;
+						   cnt++;
+						   break;
+			case "center ellipsis" : colArr[cnt] = 2;
+						   cnt++;
+						   break;							   
+			case "right" : colArr[cnt] = 3;
+							cnt++;			  
+							break;	
+			case "rigth ellipsis" : colArr[cnt] = 2;
+			  cnt++;	
+			  break;							
+			}
+		}
+			
+	}
+	return colArr;
+}
+
+var elem = document.getElementById("myvideo");
+
+function openFullscreen(seq) {
+  var elem = document.getElementById("video"+seq);
+ console.log('elem',elem)
+  elem.muted = true;
+  if (elem.requestFullscreen) {
+    elem.requestFullscreen();
+  } else if (elem.mozRequestFullScreen) { /* Firefox */
+    elem.mozRequestFullScreen();
+  } else if (elem.webkitRequestFullscreen) { /* Chrome, Safari & Opera */
+    elem.webkitRequestFullscreen();
+  } else if (elem.msRequestFullscreen) { /* IE/Edge */
+    elem.msRequestFullscreen();
+  }
+
+}
+
+function facebookLink(){
+	var linkUrl = $( 'meta[name="metaurl"]' ).attr( 'content' ); 
+/*	console.log(linkUrl)*/
+	//linkUrl = 'http://zin.branchline.co.kr'; 
+	//console.log(linkUrl)
+	window.open( 'http://www.facebook.com/sharer.php?display=popup&u=' + linkUrl );  
+}  
+
+
+
+function blogLink() {
+
+    var title = $( 'meta[name="metatitle"]' ).attr( 'content' );
+    var url =  $( 'meta[name="metaurl"]' ).attr( 'content' );
+
+    //console.log(url)
+    //console.log(title)
+    //window.open( 'https://share.naver.com/web/shareView?url=' + encodeURI(encodeURIComponent(url))+ '&title=' +encodeURI(title));    
+    window.open( 'http://blog.naver.com/openapi/share?url=' + url + '&title=' + encodeURI(title));    
+}
+
+function kakaoLink(id){
+	var linkUrl = $( 'meta[name="metaurl"]' ).attr( 'content' ); 
+	var url = $( 'meta[name="metapath"]' ).attr( 'content' ); 
+    var title = $( 'meta[name="metatitle"]' ).attr( 'content' );
+    var description = $( 'meta[name="metadesc"]' ).attr( 'content' );
+    var image = $( 'meta[name="metaimage"]' ).attr( 'content' );
+    //@dwkim 임시 주석
+	/*Kakao.Link.sendCustom({ 
+		templateId: id, 
+		templateArgs: {
+			  'url': url,
+	          'img': image,
+	          'title' : title,
+	          'remark' : description       	  
+	        }
+	});*/
+/* 		Kakao.Link.sendDefault({
+	    objectType: 'feed',
+	    content:{
+			title: $('meta[property="og:title"]').attr('content'),
+			description: $('meta[property="og:description"]').attr('content'),
+			imageUrl:'http://k.kakaocdn.net/dn/Q2iNx/btqgeRgV54P/VLdBs9cvyn8BJXB3o7N8UK/kakaolink40_original.png', //$('meta[property="og:image"]').attr('content'),
+			link:{
+				mobileWebUrl: 'https://developers.kakao.com',//window.location.href,
+				webUrl: 'https://developers.kakao.com', //window.location.href					
+			}
+		},
+	    buttons: [
+	      {
+	        title: '웹으로 보기',
+	        link: {
+	          mobileWebUrl: 'https://developers.kakao.com',
+	          webUrl: 'https://developers.kakao.com',
+	        },
+	      },
+	      {
+	        title: '앱으로 보기',
+	        link: {
+	          mobileWebUrl: 'https://developers.kakao.com',
+	          webUrl: 'https://developers.kakao.com',
+	        },
+	      },
+	    ],
+	}); */
+	
+	  /*Kakao.Link.sendCustom({
+		    templateId: 3135,
+		    templateArgs: {
+		      title:
+		        '판교 맛집에 들르다. 다양하고 풍부한 퓨전 한정식. 깔끔한 내부 인테리어 라이언',
+		      description:
+		        '부담없는 가격에 푸짐하게 즐기는 점심메뉴 런치한정식, 불고기정식, 돼지 김치찌개 등',
+		    },
+		  })
+		}*/
+}	
+
+
+
+
+/*$(document).on("click", "#sh-link", function(e) { 
+	// 링크복사 시 화면 크기 고정
+    $('html').find('meta[name=viewport]').attr('content', 'width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no'); 
+	var html = "<input id='clip_target' type='text' value='' style='position:absolute;top:-9999em;'/>"; 
+	$(this).append(html); 
+	var input_clip = document.getElementById("clip_target"); 
+	//현재 url 가져오기
+	var _url = $(location).attr('href'); 
+	$("#clip_target").val(_url); 
+	if (navigator.userAgent.match(/(iPod|iPhone|iPad)/)) { 
+		var editable = input_clip.contentEditable; 
+		var readOnly = input_clip.readOnly; 
+		input_clip.contentEditable = true; 
+		input_clip.readOnly = false; 
+		var range = document.createRange(); 
+		range.selectNodeContents(input_clip); 
+		var selection = window.getSelection(); 
+		selection.removeAllRanges(); 
+		selection.addRange(range); 
+		input_clip.setSelectionRange(0, 999999); 
+		input_clip.contentEditable = editable; 
+		input_clip.readOnly = readOnly; 
+	} else { 
+		input_clip.select(); 
+	} 
+	try { 
+		var successful = document.execCommand('copy'); 
+		input_clip.blur(); 
+		if (successful) { 
+			alert("URL이 복사 되었습니다. 원하시는 곳에 붙여넣기 해 주세요."); 
+			// 링크복사 시 화면 크기 고정 
+			$('html').find('meta[name=viewport]').attr('content', 'width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=yes'); 
+		} else { 
+			alert('이 브라우저는 지원하지 않습니다.'); 
+		} 
+	} catch (err) { 
+		alert('이 브라우저는 지원하지 않습니다.'); 
+	} 
+}); //클립보드 복사
+*/
+function copyUrl(e) { 
+	// 링크복사 시 화면 크기 고정
+    $('html').find('meta[name=viewport]').attr('content', 'width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no'); 
+	var html = "<input id='clip_target' type='text' value='' style='position:absolute;top:-9999em;'/>"; 
+	//console.log($(this))
+		//console.log($('#sns-url'))
+	$('#'+e).append(html); 
+	var input_clip = document.getElementById("clip_target"); 
+	//현재 url 가져오기
+	var _url = $(location).attr('href'); 
+	$("#clip_target").val(_url); 
+	if (navigator.userAgent.match(/(iPod|iPhone|iPad)/)) { 
+		var editable = input_clip.contentEditable; 
+		var readOnly = input_clip.readOnly; 
+		input_clip.contentEditable = true; 
+		input_clip.readOnly = false; 
+		var range = document.createRange(); 
+		range.selectNodeContents(input_clip); 
+		var selection = window.getSelection(); 
+		selection.removeAllRanges(); 
+		selection.addRange(range); 
+		input_clip.setSelectionRange(0, 999999); 
+		input_clip.contentEditable = editable; 
+		input_clip.readOnly = readOnly; 
+	} else { 
+		input_clip.select(); 
+	} 
+	try { 
+		var successful = document.execCommand('copy'); 
+		input_clip.blur(); 
+		if (successful) { 
+			alert("URL이 복사 되었습니다. 원하시는 곳에 붙여넣기 해 주세요."); 
+			// 링크복사 시 화면 크기 고정 
+			$('html').find('meta[name=viewport]').attr('content', 'width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=yes'); 
+		} else { 
+			alert('이 브라우저는 지원하지 않습니다.'); 
+		} 
+	} catch (err) { 
+		alert('이 브라우저는 지원하지 않습니다.'); 
+	} 
+}
+
+
+
+

@@ -1,0 +1,99 @@
+$(function () {
+    $(window).on("load resize", function () {
+        compare();
+    });
+
+    // .filter-toggle
+	filterChk();
+
+	// compare layer (비교하기 창)
+	compare();
+});
+
+// filter search
+function filterChk() {
+	$('.filter-toggle').each(function () {
+
+		$('.field:not(.no-switch)').each(function () {
+			var labelSwitche = $(this).children('.label');
+			labelSwitche.on('click', function () {
+				if ($('html').hasClass('is-mobile')) {
+					$(this).parent('.field').toggleClass('show');
+				}
+			});
+		});
+	});
+
+	$('.custom-search').on('click', 'input:checkbox', function () {
+		var $checkbox = $(this);
+		var selectThis = $checkbox.parent().find('label');
+		var selectThisVal = $(this).attr('id');
+		var selectName = selectThis.html();
+
+		if ($checkbox.is(':checked') == true) {
+			$('.filter-select').append($('<span type="button" data-label="' + selectThisVal +
+				'" class="item">' +
+				selectName + '<button type="button" class="btn delete">' +
+				'<i class="ico delete">' + '</i>' + '</button' + '</span>'));
+		} else {
+			$('.filter-select').find('[data-label="' + selectThisVal + '"]').remove();
+		}
+
+		if ($('.btn.delete').length > 0) {
+			$('.filter-select .item').each(function () {
+				$('.btn.delete').on('click', function () {
+					var cloneVal = $(this).parent('.item');
+					var cloneValLabel = $(this).parent('.item').attr('data-label');
+					cloneVal.remove();
+					$('.custom-search').find('[id="' + cloneValLabel + '"]').prop(
+						"checked",
+						false);
+					checkboxLength();
+				});
+			});
+		}
+
+		checkboxLength();
+
+		function checkboxLength() {
+			if ($('input:checkbox:checked').length > 0) {
+				$('.field-wrap').addClass('checking');
+			} else {
+				$('.field-wrap').removeClass('checking');
+			}
+		}
+
+		$('.btn.reset').on('click', function () {
+			$('.filter-select').find('.item').remove();
+			$('.field-wrap').removeClass('checking');
+			$('.checkbox').prop("checked", false);
+		});
+	});
+}
+
+// compare (비교하기) layer 
+//  [D] 210728 수정
+function compare() {
+	$('.product-list .list-wrap').each(function () {
+		var footerOfftop = $('footer').offset().top;
+
+		$('.data-list .item.product .btn').on('click', function () {
+			if (!$(this).is('[disabled]')) {
+				$('body').addClass('opened-compare');
+			}
+		});
+
+		$('.btn.close').on('click', function () {
+			$('body').removeClass('opened-compare');
+		})
+
+		$(window).scroll(function () {
+			if ($(window).scrollTop() + $(window).innerHeight() > footerOfftop) {
+				$('body').addClass('release-compare');
+			} else {
+				$('body').removeClass('release-compare');
+			}
+		});
+	});
+}
+// --  [D] 210728 수정

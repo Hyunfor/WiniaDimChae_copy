@@ -1,0 +1,458 @@
+/**
+ * 
+ */
+/* Ready */
+$(document).ready(function() {
+	fnGnbBannerInfo();
+});
+
+function  fnGnbBannerInfo(){
+	$.ajax({
+	    url: '/main/gnbBanner',
+	    type: 'POST',
+	    beforeSend: function () {
+	    },
+	    success: function (response) {
+	    	//console.log(response)	
+	    	//console.log(response.resultObject.data1)	    	
+	    	//console.log(response.resultObject.data2)	
+	    	//console.log(response.resultObject.data3)	
+	    	//console.log(response.resultObject.data4)	
+	    	//console.log(response.resultObject.data5)	
+	    	//console.log(response.resultObject.data6)
+	    	
+	    	if(!fnIsEmpty(response.resultObject.data1)){
+	    		if(response.resultObject.data1.EXPOSURE_YN=="Y"){
+	    			$('#gnbDiv1').css('display', '');
+	    			if(response.resultObject.data1.PBLANK_YN=="Y"){
+	    				$('#gnbATag1').attr("target","_blank");
+	    				$('#gnbATag2').attr("target","_blank");
+	    			}
+	    			if(!fnIsEmpty(response.resultObject.data1.PLINK_URL)){
+	    				$('#gnbATag1').attr("href",response.resultObject.data1.PLINK_URL);
+	    				$('#gnbATag2').attr("href",response.resultObject.data1.PLINK_URL);
+	    			}
+	    			if(!fnIsEmpty(response.resultObject.data1.PIMG_PATH)){
+	    				$('#gnbImgTag1').attr("src","/common/file/newImageView?IMG_PATH="+response.resultObject.data1.PIMG_PATH);
+	    			}else{
+	    				$('#gnbATag1').css('display', 'none');
+	    			}
+	    			if(!fnIsEmpty(response.resultObject.data1.MIMG_PATH)){		    			
+	    				$('#gnbImgTag2').attr("src","/common/file/newImageView?IMG_PATH="+response.resultObject.data1.MIMG_PATH);
+	    			}else{
+	    				$('#gnbATag2').css('display', 'none');
+	    			}
+	    		}
+	    		
+	    	}
+	    	
+			if(!fnIsEmpty(response.resultObject.data2)){
+	    		if(response.resultObject.data1.EXPOSURE_YN=="Y"){
+	    			$('#gnbDiv2').css('display', '');
+	    			if(response.resultObject.data2.PBLANK_YN=="Y"){
+	    				$('#gnbATag3').attr("target","_blank");
+	    				$('#gnbATag4').attr("target","_blank");
+	    			}
+	    			if(!fnIsEmpty(response.resultObject.data2.PLINK_URL)){
+	    				$('#gnbATag3').attr("href",response.resultObject.data2.PLINK_URL);
+	    				$('#gnbATag4').attr("href",response.resultObject.data2.PLINK_URL);
+	    			}
+	    			if(!fnIsEmpty(response.resultObject.data2.PIMG_PATH)){
+	    				$('#gnbImgTag3').attr("src","/common/file/newImageView?IMG_PATH="+response.resultObject.data2.PIMG_PATH);
+	    			}else{
+	    				$('#gnbATag3').css('display', 'none');
+	    			}
+	    			if(!fnIsEmpty(response.resultObject.data2.MIMG_PATH)){		    			
+	    				$('#gnbImgTag4').attr("src","/common/file/newImageView?IMG_PATH="+response.resultObject.data2.MIMG_PATH);
+	    			}else{
+	    				$('#gnbATag4').css('display', 'none');
+	    			}
+	    		}
+	    		
+		    }
+			
+			if(!fnIsEmpty(response.resultObject.data3)){
+	    		if(response.resultObject.data3.EXPOSURE_YN=="Y"){
+	    			$('#gnbDiv3').css('display', '');
+	    			if(response.resultObject.data3.PBLANK_YN=="Y"){
+	    				$('#gnbATag5').attr("target","_blank");
+	    				$('#gnbATag6').attr("target","_blank");
+	    			}
+	    			if(!fnIsEmpty(response.resultObject.data3.PLINK_URL)){
+	    				$('#gnbATag5').attr("href",response.resultObject.data3.PLINK_URL);
+	    				$('#gnbATag6').attr("href",response.resultObject.data3.PLINK_URL);
+	    			}
+	    			if(!fnIsEmpty(response.resultObject.data3.PIMG_PATH)){
+	    				$('#gnbImgTag5').attr("src","/common/file/newImageView?IMG_PATH="+response.resultObject.data3.PIMG_PATH);
+	    			}else{
+	    				$('#gnbATag5').css('display', 'none');
+	    			}
+	    			if(!fnIsEmpty(response.resultObject.data3.MIMG_PATH)){		    			
+	    				$('#gnbImgTag6').attr("src","/common/file/newImageView?IMG_PATH="+response.resultObject.data3.MIMG_PATH);
+	    			}else{
+	    				$('#gnbATag6').css('display', 'none');
+	    			}
+	    		}
+			}
+			if(!fnIsEmpty(response.resultObject.data6)){
+	    		if(response.resultObject.data6.EXPOSURE_YN=="Y"){
+	    			$('#gnbDiv4').css('display', '');
+	    			if(response.resultObject.data6.PBLANK_YN=="Y"){
+	    				$('#gnbATag7').attr("target","_blank");
+	    				$('#gnbATag8').attr("target","_blank");
+	    			}
+	    			if(!fnIsEmpty(response.resultObject.data6.PLINK_URL)){
+	    				$('#gnbATag7').attr("href",response.resultObject.data6.PLINK_URL);
+	    				$('#gnbATag8').attr("href",response.resultObject.data6.PLINK_URL);
+	    			}
+	    			if(!fnIsEmpty(response.resultObject.data6.PIMG_PATH)){
+	    				$('#gnbImgTag7').attr("src","/common/file/newImageView?IMG_PATH="+response.resultObject.data6.PIMG_PATH);
+	    			}else{
+	    				$('#gnbATag7').css('display', 'none');
+	    			}
+	    			if(!fnIsEmpty(response.resultObject.data6.MIMG_PATH)){		    			
+	    				$('#gnbImgTag8').attr("src","/common/file/newImageView?IMG_PATH="+response.resultObject.data6.MIMG_PATH);
+	    			}else{
+	    				$('#gnbATag8').css('display', 'none');
+	    			}
+	    		}
+			}
+			if(!fnIsEmpty(response.resultObject.data4)){
+	    		if(response.resultObject.data4.EXPOSURE_YN=="Y"){
+	    			$('#gnbDiv5').css('display', '');
+	    			if(response.resultObject.data4.PBLANK_YN=="Y"){
+	    				$('#gnbATag9').attr("target","_blank");
+	    				$('#gnbATag10').attr("target","_blank");
+	    			}
+	    			if(!fnIsEmpty(response.resultObject.data4.PLINK_URL)){
+	    				$('#gnbATag9').attr("href",response.resultObject.data4.PLINK_URL);
+	    				$('#gnbATag10').attr("href",response.resultObject.data4.PLINK_URL);
+	    			}
+	    			if(!fnIsEmpty(response.resultObject.data4.PIMG_PATH)){
+	    				$('#gnbImgTag9').attr("src","/common/file/newImageView?IMG_PATH="+response.resultObject.data4.PIMG_PATH);
+	    			}else{
+	    				$('#gnbATag9').css('display', 'none');
+	    			}
+	    			if(!fnIsEmpty(response.resultObject.data4.MIMG_PATH)){		    			
+	    				$('#gnbImgTag10').attr("src","/common/file/newImageView?IMG_PATH="+response.resultObject.data4.MIMG_PATH);
+	    			}else{
+	    				$('#gnbATag10').css('display', 'none');
+	    			}
+	    		}
+			}
+			if(!fnIsEmpty(response.resultObject.data5)){
+	    		if(response.resultObject.data5.EXPOSURE_YN=="Y"){
+	    			$('#gnbDiv6').css('display', '');
+	    			if(response.resultObject.data5.PBLANK_YN=="Y"){
+	    				$('#gnbATag11').attr("target","_blank");
+	    				$('#gnbATag12').attr("target","_blank");
+	    			}
+	    			if(!fnIsEmpty(response.resultObject.data5.PLINK_URL)){
+	    				$('#gnbATag11').attr("href",response.resultObject.data5.PLINK_URL);
+	    				$('#gnbATag12').attr("href",response.resultObject.data5.PLINK_URL);
+	    			}
+	    			if(!fnIsEmpty(response.resultObject.data5.PIMG_PATH)){
+	    				$('#gnbImgTag11').attr("src","/common/file/newImageView?IMG_PATH="+response.resultObject.data5.PIMG_PATH);
+	    			}else{
+	    				$('#gnbATag11').css('display', 'none');
+	    			}
+	    			if(!fnIsEmpty(response.resultObject.data5.MIMG_PATH)){		    			
+	    				$('#gnbImgTag12').attr("src","/common/file/newImageView?IMG_PATH="+response.resultObject.data5.MIMG_PATH);
+	    			}else{
+	    				$('#gnbATag12').css('display', 'none');
+	    			}
+	    		}
+			}
+	    }
+	});
+}
+
+
+function insertPageData(isSuccess, targetTBody, pageInfo) {
+	var dataHtml = new Array();	
+
+	if(!isSuccess) {
+	} else if(fnIsEmpty(pageInfo)) {
+	} else {
+		    if(!pageInfo.firstWindow){
+		    	dataHtml.push('<a href="javascript:fnPaging('+pageInfo.prevWindow+')" class="btn fir"><i class="ico page-arr2"><span>page first</span></i></a>');
+		    }
+		    if(!pageInfo.firstPage){
+		    	dataHtml.push('<a href="javascript:fnPaging('+pageInfo.prevPage+')" class="btn prev"><i class="ico page-arr"><span>page before</span></i></a>');
+		    }
+		    dataHtml.push('<ul>');
+		    var pagenum = pageInfo.pages;
+		    $.each(pagenum, function(i) {
+		    	if((pagenum[i]-1)==(pageInfo.pageNo)){
+		    		dataHtml.push('<li class="active"><a href="javascript:void(0);">'+pagenum[i]+'</a></li>');
+		    	}else{
+ 		
+		    		dataHtml.push('<li><a href="javascript:fnPaging('+(pagenum[i]-1)+')">'+pagenum[i]+'</a>');
+		    	}
+		    });	
+		    dataHtml.push('</ul>');
+		    
+		    if(!pageInfo.lastPage){
+		    	dataHtml.push('<a href="javascript:fnPaging('+pageInfo.nextPage+')" class="btn next"><i class="ico page-arr"><span>page next</span></i></a>');
+		    }
+		    if(!pageInfo.lastWindow){
+		    	dataHtml.push('<a href="javascript:fnPaging('+pageInfo.nextWindow+')" class="btn end"><i class="ico page-arr2"><span>page end</span></i></a>');
+		    }
+		    targetTBody.append(dataHtml.join(''));
+	}	
+}
+function insertPageData1(isSuccess, targetTBody, pageInfo) {
+	var dataHtml = new Array();	
+
+	if(!isSuccess) {
+	} else if(fnIsEmpty(pageInfo)) {
+	} else {
+		    if(!pageInfo.firstWindow){
+		    	dataHtml.push('<a href="javascript:fnPaging1('+pageInfo.prevWindow+')" class="btn fir"><i class="ico page-arr2"><span>page first</span></i></a>');
+		    }
+		    if(!pageInfo.firstPage){
+		    	dataHtml.push('<a href="javascript:fnPaging1('+pageInfo.prevPage+')" class="btn prev"><i class="ico page-arr"><span>page before</span></i></a>');
+		    }
+		    dataHtml.push('<ul>');
+		    var pagenum = pageInfo.pages;
+		    $.each(pagenum, function(i) {
+		    	if((pagenum[i]-1)==(pageInfo.pageNo)){
+		    		dataHtml.push('<li class="active"><a href="javascript:void(0);">'+pagenum[i]+'</a></li>');
+		    	}else{
+ 		
+		    		dataHtml.push('<li><a href="javascript:fnPaging1('+(pagenum[i]-1)+')">'+pagenum[i]+'</a>');
+		    	}
+		    });	
+		    dataHtml.push('</ul>');
+		    
+		    if(!pageInfo.lastPage){
+		    	dataHtml.push('<a href="javascript:fnPaging1('+pageInfo.nextPage+')" class="btn next"><i class="ico page-arr"><span>page next</span></i></a>');
+		    }
+		    if(!pageInfo.lastWindow){
+		    	dataHtml.push('<a href="javascript:fnPaging1('+pageInfo.nextWindow+')" class="btn end"><i class="ico page-arr2"><span>page end</span></i></a>');
+		    }
+		    targetTBody.append(dataHtml.join(''));
+	}	
+}
+function insertPageData2(isSuccess, targetTBody, pageInfo) {
+	var dataHtml = new Array();	
+
+	if(!isSuccess) {
+	} else if(fnIsEmpty(pageInfo)) {
+	} else {
+		    if(!pageInfo.firstWindow){
+		    	dataHtml.push('<a href="javascript:fnPaging2('+pageInfo.prevWindow+')" class="btn fir"><i class="ico page-arr2"><span>page first</span></i></a>');
+		    }
+		    if(!pageInfo.firstPage){
+		    	dataHtml.push('<a href="javascript:fnPaging2('+pageInfo.prevPage+')" class="btn prev"><i class="ico page-arr"><span>page before</span></i></a>');
+		    }
+		    dataHtml.push('<ul>');
+		    var pagenum = pageInfo.pages;
+		    $.each(pagenum, function(i) {
+		    	if((pagenum[i]-1)==(pageInfo.pageNo)){
+		    		dataHtml.push('<li class="active"><a href="javascript:void(0);">'+pagenum[i]+'</a></li>');
+		    	}else{
+ 		
+		    		dataHtml.push('<li><a href="javascript:fnPaging2('+(pagenum[i]-1)+')">'+pagenum[i]+'</a>');
+		    	}
+		    });	
+		    dataHtml.push('</ul>');
+		    
+		    if(!pageInfo.lastPage){
+		    	dataHtml.push('<a href="javascript:fnPaging2('+pageInfo.nextPage+')" class="btn next"><i class="ico page-arr"><span>page next</span></i></a>');
+		    }
+		    if(!pageInfo.lastWindow){
+		    	dataHtml.push('<a href="javascript:fnPaging2('+pageInfo.nextWindow+')" class="btn end"><i class="ico page-arr2"><span>page end</span></i></a>');
+		    }
+		    targetTBody.append(dataHtml.join(''));
+	}	
+}
+
+function fnEventLoad(seq, loginChk){
+	var div = $('#SELECT_DIV').val();
+	if(loginChk=='Y'){ 
+		if(fnIsEmpty($('#hdnSession').val())){
+			alert('로그인전용 이벤트 입니다. 로그인 후 참여바랍니다.');
+		}else{
+		 	location.href='/brand/event/eventDetailInfo?SELECT_DIV='+div+'&SEQ='+seq;
+		}		
+	}else{		
+	 	location.href='/brand/event/eventDetailInfo?SELECT_DIV='+div+'&SEQ='+seq;
+	}
+
+	
+}
+
+var StringTool = {
+	format: function() { 
+		let args = arguments; 
+		return args[0].replace(/{(\d+)}/g, function(match, num) { 
+			num = Number(num) + 1; return typeof(args[num]) != undefined ? args[num] : match; 
+		}); 
+	}
+}
+
+/**
+ * 공유하기 
+ * @param type
+ * @returns
+ */
+function sharedSNS(type) {
+	
+	var metaurl = $('meta[name="metaurl"]').attr('content');
+	var metatitle = $('meta[name="metatitle"]').attr('content');
+	var metadesc = $('meta[name="metadesc"]').attr('content');
+	var metaimage = $('meta[name="metaimage"]').attr('content');
+	var metatype = $('meta[name="metatype"]').attr('content');
+	var metasite = $('meta[name="metasite"]').attr('content');
+	
+/*	console.log("type : " , type);
+	console.log("metaurl : " , metaurl);
+	console.log("metatitle : " , metatitle);
+	console.log("metadesc : " , metadesc);
+	console.log("metaimage : " , metaimage);
+	console.log("metatype : " , metatype);
+	console.log("metasite : " , metasite);*/
+	
+	//URL 복사
+	if(type == 'url') {
+		fnCopyUrlToClipboard(metaurl);
+	}
+	else if(type == 'band') {
+		fnShareNaverBand(metaurl, metatitle, metadesc);
+	}
+	else if(type == 'kakao') {
+		fnShareKakaoLink(metaurl, metatitle, metadesc, metaimage);
+	}
+	else if(type == 'twitter') {
+		fnShareTwitter(metasite, metatitle, metaurl);
+	}
+	else if(type == 'facebook') {
+		//fnShareFacebookLink(metaurl);
+		fnShareFaceBookLink_v2(metaurl, metatitle);
+	}
+}
+
+/**
+ * URL을 클립보드에 복사
+ * @param url
+ * @returns
+ */
+function fnCopyUrlToClipboard(url)
+{
+	var obShareUrl = $('#ShareUrl');
+	if(!obShareUrl) {
+		obShrareUrl = $('<input>').attr({type: 'hidden', id: 'ShareUrl', name: 'ShareUrl'});
+		$(document).append(obShrareUrl);
+	}
+	obShareUrl.val(url);
+	obShareUrl.attr('type', 'text');
+	try {
+		obShareUrl.select();
+		var success = document.execCommand("copy");
+		obShareUrl.attr('type', 'hidden')
+		if(success) 
+			alert("URL이 클립보드에 복사되었습니다.");
+		else 
+			alert("현재 브라우저에서 이 기능을 지원하지 않습니다.");
+	} catch(err) {
+		alert("현재 브라우저에서 이 기능을 지원하지 않습니다.["+err+"]");
+	}
+}
+
+function fnCopuUrlToClipboardMobile(url) {
+	if(Clipboard) {
+		var clipboard = new Clipboard('.clipboard', {
+			text: function() {
+				return url;
+			}
+		})
+		clipboard.on('success', function(e) {
+			alert("URL이 클립보드에 복사되었습니다.");
+		});
+		clipboard.on('error', function(e) {
+			alert("현재 브라우저에서 이 기능을 지원하지 않습니다.["+e+"]");
+		});
+		
+	} else {
+		alert("현재 브라우저에서 이 기능을 지원하지 않습니다.");
+	}
+}
+
+function fnShareNaverBand(url, title, content) {
+	var encodeBody = encodeURIComponent(StringTool.format('{0}\n{1}\n{2}', title, content, url));
+	var encodeRoute = encodeURIComponent(url);
+	var link = StringTool.format('http://band.us/plugin/share?body={0}&route={1}', encodeBody, encodeRoute);
+	window.open(link, 'share_band', 'width=410, height=720, resizeable=no');
+}
+
+// id = 52783 이거 쓰면 됨
+function fnShareKakaoLink(url, title, description, image) {
+	//발급후 적용
+	var javascript_key = "c2b9342cc6b0297c688551e28c389ece";
+	var templateId = 52783;
+	if(!Kakao.isInitialized()) {
+		Kakao.init(javascript_key);
+	}
+	
+    Kakao.Link.sendDefault({
+		objectType : 'feed',
+		content : { 
+			title : title,
+			description : description, 
+			imageUrl : image, 
+			link : { 
+				mobileWebUrl : url, 
+				webUrl : url, 
+			}, 
+		}, 
+		buttons : [ 
+			{ 
+				title : '웹으로 보기', 
+				link : { 
+					webUrl : url, 
+				}, 
+			}, 
+		], 
+	}) 
+	
+	
+	/*Kakao.Link.sendCustom({
+		templateId : templateId,
+		templateArgs : {
+			'url' : url,
+			'img' : image,
+			'title' : title,
+			'remark' : description
+		}
+	});*/
+}
+
+function fnShareFacebookLink(url) {
+	// url = 'http://zin.branchline.co.kr';
+	window.open('http://www.facebook.com/sharer.php?display=popup&u='+ url, 'share_facebook', 'width=410, height=720, resizeable=no');
+	
+}
+
+function fnShareFaceBookLink_v2(url, title) {
+	console.log('share facebook : ' + url);
+	//DocImage = encodeURIComponent("http://www.kocca.kr/images/common/header/logo_kocca.gif");
+	//var newwindow = window.open('http://www.facebook.com./sharer.php?s=100&p[url]='+encodeURIComponent(url)+'&p[title]='+encodeURIComponent(title), 'share_facebook', 'toolbar=0, status=0, width=626, height=436');
+	var newwindow = window.open('http://www.facebook.com/sharer.php?display=popup&u='+ url, 'share_facebook', 'width=410, height=720, resizeable=no');
+	if(window.focus){newwindow.focus();}
+}
+
+function fnShareTwitter(site_nm, title, url){
+	//var str = site_nm + " | " + title + " " + url;
+	//var sitelink = "http://twitter.com/home?status=" + encodeURIComponent(str);
+	var str = site_nm + "\n" + title;
+	var sitelink = "https://twitter.com/intent/tweet?text=" + encodeURIComponent(str) + "&url=" + encodeURIComponent(url)
+	window.open(sitelink, 'share_twitter', 'width=410, height=720, resizeable=no');
+}
+
+function blogLink(title, url) {
+	window.open('http://blog.naver.com/openapi/share?url=' + url + '&title='+ encodeURI(title), 'share_blog', 'width=410, height=720, resizeable=no');
+}
+
+
+
