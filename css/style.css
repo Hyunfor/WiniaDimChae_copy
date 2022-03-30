@@ -30,6 +30,9 @@
     max-width: 1440px ;
     margin: 0 auto;
   }
+  .w450-box {
+    max-width: 450px;
+  }
 /* 모듈화 */
   .img-box {
     background-size: cover;
@@ -37,22 +40,26 @@
     background-position: center ;
   }
 
-
+  .video-box {
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center ;
+  }
 
   /* slider-wrap-top st */
   .slider-main {
     margin-top: 50px;
   }
-  .slider-main > .slider-list .content {
+  .slider-main > .slider-wrap .content {
     position: relative;
   }
-  .slider-main > .slider-list > .content > .loader > img{
+  .slider-main  .content > .loader > img{
     width: 100%;
   }
-  .slider-main > .slider-list > .content > .loader > video{
-    width: 100%;
+  .slider-main  .content > .loader > video{
+    width: 80%;
   }
-  .slider-main > .slider-list > .content > .pc-version >.txt-box {
+  .slider-main  .content > .pc-version >.txt-box {
     position:absolute;
     top:50%;
     left:20%;
@@ -60,15 +67,15 @@
     text-align: center;
     line-height: 1.18;
   }
-  .slider-main > .slider-list > .content > .pc-version > .txt-box > p {
+  .slider-main  .pc-version  .txt-box > p {
     font-size: 24px;
     font-weight: bold;
   }
-  .slider-main > .slider-list > .content > .pc-version > .txt-box > h2 {
+  .slider-main  .pc-version .txt-box > h2 {
     font-size: 60px;
     font-weight: bold;
   }
-  .slider-main > .slider-list > .content > .pc-version > .btn-box {
+  .slider-main  .content > .pc-version > .btn-box {
     width: 170px;
     height: 48px;
     line-height: 48px;
@@ -84,7 +91,7 @@
     border-radius: 48px;
   }
 
-  .slider-main > .slider-list > .content > .mo-version >.txt-box {
+  .slider-main .content > .mo-version >.txt-box {
     position:absolute;
     top:50%;
     left:20%;
@@ -92,15 +99,15 @@
     text-align: center;
     line-height: 1.18;
   }
-  .slider-main > .slider-list > .content > .mo-version > .txt-box > p {
+  .slider-main .mo-version > .txt-box > p {
     font-size: 24px;
     font-weight: bold;
   }
-  .slider-main > .slider-list > .content > .mo-version > .txt-box > h2 {
+  .slider-main .mo-version > .txt-box > h2 {
     font-size: 60px;
     font-weight: bold;
   }
-  .slider-main > .slider-list > .content > .mo-version > .btn-box {
+  .slider-main .content > .mo-version > .btn-box {
     width: 170px;
     height: 48px;
     line-height: 48px;
@@ -116,10 +123,95 @@
     border-radius: 48px;
   }
 
+  .slider-main > .slider-wrap .content {
+    background-color: #555;
+    position: relative;
+  }
+  /* .slider-main > .btn-box {
+    width: 27px;
+    height: 36px;
+    color: white;
+    border-radius:50%;
+    font-size:40px;
+    font-weight: bold;
+    position: absolute;
+    text-align: center;
+    top:50%;
+    transform: translateY(-50%);
+  } */
+  
+  .slider-wrap > .slick-dots {
+    bottom:40px;
+    z-index:9;
+    color:#E0E1E5;
+  }
+  .slider-wrap > .slick-dots:hover {
+    color: #003B70;
+  }
+  .slider-wrap > .slick-prev {
+    width: 27px;
+    height: 36px;
+    font-size: 40px;
+    left:0;
+    z-index: 9;
+  }
+  .slider-wrap > .slick-next {
+    width: 27px;
+    height: 36px;
+    font-size: 40px;
+    right: 0;
+    z-index: 9;
+  }
   /* slider-wrap-top en */
 
 
+  /* tap-section02 st */
+  .tap-section02 {
+    margin-top: 60px;
+  }
+  .tap-section02 > .slider-wrap {
+    padding-bottom: 40px;
+    margin: 0 571.5px;
+    z-index:1;
+  }
+  .tap-section02 > .slider-wrap > .txt-box {
+    position: relative;
+  }
+  .tap-section02 > .slider-wrap > .txt-box > .txt {
+    font-size: 18px;
+    font-weight: bold;
+    margin: 0 20px;
+    padding: 10px 0px 12px;
+    transition: 0;
+    position: absolute;
+  }
+  .tap-section02 > .slider-wrap > .txt-box > .txt::after {
+    border-bottom: 3px solid #555 ;
+    transition: 0.5s;
+  }
 
+  .tap-section02 > .slider-wrap > .module {
+    padding: 40px 0;
+  }
+  .tap-section02 > .slider-wrap > .module > .module-wrap {
+    display:flex;
+    justify-content:center;
+    position: relative;
+    padding-bottom: 700px;
+  }
+  .tap-section02 > .slider-wrap > .module > .module-wrap > .winia-module {
+    max-width: 1400px;
+    margin: 0 571.5px;
+    position:absolute;
+  }
+  .tap-section02 > .slider-wrap > .module > .module-wrap > .winia-module > .pro-img {
+    width: 446.66px;
+  }
+  /* .tap-section02 > .slider-wrap > .module > .module-wrap > .winia-module > .pro-img > li{
+ 
+  } */
+
+  /* tap-section02 en */
 
 
 
