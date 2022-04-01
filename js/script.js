@@ -3,6 +3,12 @@ $(document).ready(function(){
   $('.slider-main > .slider-wrap').slick({
     dots: true,
     });
+
+  // $('.section02 > .slider-wrap').slick({
+  //   dots: true,
+  //   });
+  
+  
   //   $(".slider-main > .slider-wrap").slick({})
 
   //   $(".left-btn").click(function(){
