@@ -4,10 +4,11 @@ $(document).ready(function(){
     dots: true,
     });
 
-  // $('.section02 > .slider-wrap').slick({
-  //   dots: true,
-  //   });
+  $('.section02 > .slider-section').slick({
+    dots: true,
+    });
   
+    
   
   //   $(".slider-main > .slider-wrap").slick({})
 
