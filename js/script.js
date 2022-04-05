@@ -7,8 +7,12 @@ $(document).ready(function(){
   $('.section02 > .slider-section').slick({
     dots: true,
     });
+
+  $('.section03 > .best-item').slick({
+      dots: true,
+      });
   
-    
+
   
   //   $(".slider-main > .slider-wrap").slick({})
 
