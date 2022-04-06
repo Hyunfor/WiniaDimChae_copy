@@ -8,9 +8,13 @@ $(document).ready(function(){
     dots: true,
     });
 
-  $('.section03 > .best-item').slick({
+  $('.section03 > .best-item-wrap').slick({
       dots: true,
       });
+
+  // $('.section04 > .kitchen-img').slick({
+  //     dots: true,
+  //     });
   
 
   
