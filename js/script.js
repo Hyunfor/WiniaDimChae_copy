@@ -8,11 +8,29 @@ $(document).ready(function(){
     dots: true,
     });
 
-  $('.section03 > .best-item-wrap').slick({
-      dots: true,
+  $('.best-section03 > .best-section > .best-slider > .slide').slick({
+      slidesToShow: 3 ,
+      slidesToScroll: 3 ,
+
       });
 
-  // $('.section04 > .kitchen-img').slick({
+    //   $(".txt00").click(function(){
+    
+    //     var thisIndex = $(this).index();
+    
+    //     $(".slide").eq(thisIndex).addClass("active");
+    //     $(".slide").eq(thisIndex).siblings().removeClass("active");
+    //     $(".slide").slick('setPosition');
+    
+    //   });
+    //   $(".best-slide01").slick()
+    //   $(".best-slide02").slick()
+    //   $(".best-slide03").slick()
+    // });
+      
+
+
+  // $('.kitchen-slider > .kit-slider').slick({
   //     dots: true,
   //     });
   
