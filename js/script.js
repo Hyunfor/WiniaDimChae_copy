@@ -8,7 +8,7 @@ $(document).ready(function(){
     dots: true,
     });
 
-    $("li").click(function(){
+    $(".section02 li").click(function(){
 
       let indexNum11 = $(this).index();
   
@@ -33,11 +33,10 @@ $(document).ready(function(){
 
 
    $('.kitchen-wrap > .kitchen-slider').slick({
-    dots: true,
 
     });
 
-    $("li").click(function(){
+    $(".kitchen-wrap li").click(function(){
 
     let indexNum01 = $(this).index();
 
@@ -47,11 +46,10 @@ $(document).ready(function(){
 
 
   $('.live-wrap > .live-slider').slick({
-    dots: true,
 
     });
 
-  $("li").click(function(){
+  $(".live-wrap li").click(function(){
 
     let indexNum02 = $(this).index();
 
@@ -61,7 +59,6 @@ $(document).ready(function(){
 
 
   $('.air-wrap > .air-slider').slick({
-    dots: true,
     
     });
     
@@ -72,6 +69,11 @@ $(document).ready(function(){
     $(".air-wrap > .air-slider").slick("slickGoTo",indexNum03);
     
     });
+
+
+    // $('.sns-section07 > .SnsTitle-slider > .slide-SnsTitle').slick({
+    
+    // });
 
 })
 
